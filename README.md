@@ -1,1 +1,1 @@
-# OpenABC_in_house
+# OpenABC for nucleosome condensate simulations
