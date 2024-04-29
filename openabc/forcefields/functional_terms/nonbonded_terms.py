@@ -302,29 +302,31 @@ def ddd_dh_elec_switch_term_map(mol, salt_conc=150.0*unit.millimolar,
                 cutoff_r1_map[idx, jdx] = cutoff1_value
                 cutoff_r2_map[idx, jdx] = cutoff2_value
             elif(idx == 1 and jdx == 1):
-                switch_coeff1_map[idx, jdx] = 0.0
-                switch_coeff2_map[idx, jdx] = 0.0
-                switch_coeff3_map[idx, jdx] = 0.0
-                switch_coeff4_map[idx, jdx] = 0.0
-                switch_coeff5_map[idx, jdx] = 0.0
+                switch_coeff1_map[idx, jdx] = switch_coeff[1]
+                switch_coeff2_map[idx, jdx] = switch_coeff[2]
+                switch_coeff3_map[idx, jdx] = switch_coeff[3]
+                switch_coeff4_map[idx, jdx] = switch_coeff[4]
+                switch_coeff5_map[idx, jdx] = switch_coeff[5]
                 # Set the manning coefficient = 0.36, mimicking Manning codensation in the dna-dna interaction
-                manning_coeff_map[idx, jdx] = 0.36
-                # here, we will set S(r) to be 1.0 from 0 to r2, so r1 can be set as an <r2 arbitrary value
-                cutoff_r1_map[idx, jdx] = 1.5
+                # Temporarily set it back to 1.0
+                #manning_coeff_map[idx, jdx] = 0.36
+                manning_coeff_map[idx, jdx] = 1.0
+                # here, we will set S(r) to go from 1.0 to 0 between r1 to r2; we select a long-range electrostatic cutoff;
+                cutoff_r1_map[idx, jdx] = 4.0
                 # r2 set to 5 DH length;
-                cutoff_r2_map[idx, jdx] = 4.0                
+                cutoff_r2_map[idx, jdx] = 5.0                
             else:
-                switch_coeff1_map[idx, jdx] = 0.0
-                switch_coeff2_map[idx, jdx] = 0.0
-                switch_coeff3_map[idx, jdx] = 0.0
-                switch_coeff4_map[idx, jdx] = 0.0
-                switch_coeff5_map[idx, jdx] = 0.0
+                switch_coeff1_map[idx, jdx] = switch_coeff[1]
+                switch_coeff2_map[idx, jdx] = switch_coeff[2]
+                switch_coeff3_map[idx, jdx] = switch_coeff[3]
+                switch_coeff4_map[idx, jdx] = switch_coeff[4]
+                switch_coeff5_map[idx, jdx] = switch_coeff[5]
                 # Set the manning coefficient = 1.0
                 manning_coeff_map[idx, jdx] = 1.0
-                # here, we will set S(r) to be 1.0 from 0 to r2, so r1 can be set as an <r2 arbitrary value
-                cutoff_r1_map[idx, jdx] = 1.5
+                # here, we will set S(r) to go from 1.0 to 0 between r1 to r2; we select a long-range electrostatic cutoff;
+                cutoff_r1_map[idx, jdx] = 4.0
                 # r2 set to 5 DH length;
-                cutoff_r2_map[idx, jdx] = 4.0
+                cutoff_r2_map[idx, jdx] = 5.0    
 
     switch_coeff1_map = switch_coeff1_map.ravel().tolist() 
     switch_coeff2_map = switch_coeff2_map.ravel().tolist() 
@@ -335,11 +337,8 @@ def ddd_dh_elec_switch_term_map(mol, salt_conc=150.0*unit.millimolar,
     cutoff_r1_map = cutoff_r1_map.ravel().tolist() 
     cutoff_r2_map = cutoff_r2_map.ravel().tolist()
 
-    
-
     assert switch_coeff[0] == 1
     assert np.sum(np.array(switch_coeff)) == 0
-    
     
     # Spell out the switch function;
     elec = mm.CustomNonbondedForce(f'''energy;
