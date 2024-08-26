@@ -240,7 +240,7 @@ def dh_elec_term(charges, df_exclusions, use_pbc, ldby=1*unit.nanometer, dielect
 
 
 
-def ddd_dh_elec_switch_term_map(mol, salt_conc=150.0*unit.millimolar, 
+def ddd_dh_elec_switch_term_map(mol, salt_conc=150.0*unit.millimolar, manning_scale=0.36,
                             temperature=300.0*unit.kelvin, cutoff1=1.2*unit.nanometer, cutoff2=1.5*unit.nanometer, 
                             switch_coeff=[1, 0, 0, -10, 15, -6], force_group=6):
     '''
@@ -309,12 +309,12 @@ def ddd_dh_elec_switch_term_map(mol, salt_conc=150.0*unit.millimolar,
                 switch_coeff5_map[idx, jdx] = switch_coeff[5]
                 # Set the manning coefficient = 0.36, mimicking Manning codensation in the dna-dna interaction
                 # Temporarily set it back to 1.0
-                #manning_coeff_map[idx, jdx] = 0.36
-                manning_coeff_map[idx, jdx] = 1.0
+                manning_coeff_map[idx, jdx] = manning_scale
+                #manning_coeff_map[idx, jdx] = 1.0
                 # here, we will set S(r) to go from 1.0 to 0 between r1 to r2; we select a long-range electrostatic cutoff;
-                cutoff_r1_map[idx, jdx] = 4.0
+                cutoff_r1_map[idx, jdx] = cutoff1_value
                 # r2 set to 5 DH length;
-                cutoff_r2_map[idx, jdx] = 5.0                
+                cutoff_r2_map[idx, jdx] = cutoff2_value             
             else:
                 switch_coeff1_map[idx, jdx] = switch_coeff[1]
                 switch_coeff2_map[idx, jdx] = switch_coeff[2]
@@ -324,9 +324,9 @@ def ddd_dh_elec_switch_term_map(mol, salt_conc=150.0*unit.millimolar,
                 # Set the manning coefficient = 1.0
                 manning_coeff_map[idx, jdx] = 1.0
                 # here, we will set S(r) to go from 1.0 to 0 between r1 to r2; we select a long-range electrostatic cutoff;
-                cutoff_r1_map[idx, jdx] = 4.0
+                cutoff_r1_map[idx, jdx] = cutoff1_value
                 # r2 set to 5 DH length;
-                cutoff_r2_map[idx, jdx] = 5.0    
+                cutoff_r2_map[idx, jdx] = cutoff2_value  
 
     switch_coeff1_map = switch_coeff1_map.ravel().tolist() 
     switch_coeff2_map = switch_coeff2_map.ravel().tolist() 
@@ -386,7 +386,7 @@ def ddd_dh_elec_switch_term_map(mol, salt_conc=150.0*unit.millimolar,
         elec.setNonbondedMethod(elec.CutoffPeriodic)
     else:
         elec.setNonbondedMethod(elec.CutoffNonPeriodic)
-    elec.setCutoffDistance(4.0)
+    elec.setCutoffDistance(5.0)
     elec.setForceGroup(force_group)
     return elec
 
