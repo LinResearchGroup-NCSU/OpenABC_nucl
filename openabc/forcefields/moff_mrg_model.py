@@ -221,7 +221,75 @@ class MOFFMRGModel(CGModel):
         force = functional_terms.moff_mrg_contact_term(atom_types, self.exclusions, self.use_pbc, alpha_map, 
                                                        epsilon_map, eta, r0, cutoff, force_group)
         self.system.addForce(force)
-    
+
+    def add_contacts_rerun(self, eta=0.7/unit.angstrom, r0=8*unit.angstrom, cutoff=2.0*unit.nanometer,
+                     alpha_protein_dna=1.6264e-3, alpha_dna_dna=1.678e-5, epsilon_protein_dna=0, epsilon_dna_dna=0,
+                     force_group=8):
+        """
+        Add nonbonded contacts for MOFF protein and MRG DNA. 
+        
+        For amino acids, the CA atom type indices are 0-19, and CG nucleotide atom type index is 20. 
+        
+        The potential expression is: alpha/r^12 - 0.5*epsilon*(1 + tanh(eta*(r0 - r)))
+        
+        Parameters
+        ----------
+        eta : Quantity
+            Parameter eta. 
+        
+        r0 : Quantity
+            Parameter r0. 
+        
+        cutoff : Quantity
+            Cutoff distance
+        
+        alpha_protein_dna : float or int
+            Protein-DNA interaction parameter alpha. 
+        
+        alpha_dna_dna : float or int
+            DNA-DNA interaction parameter alpha. 
+        
+        epsilon_protein_dna : float or int
+            Protein-DNA interaction parameter epsilon. 
+        
+        epsilon_dna_dna : float or int
+            DNA-DNA interaction parameter epsilon. 
+        
+        force_group : int
+            Force group.  
+        
+        """
+        print('Add protein and DNA nonbonded contacts.')
+        atom_types = []
+        for i, row in self.atoms.iterrows():
+            if (row['resname'] in _amino_acids) and ((row['name'] == 'CA') or (row['name'] == 'NP')):
+                atom_types.append(_amino_acids.index(row['resname']))
+            elif (row['resname'] in _dna_nucleotides) and ((row['name'] == 'DN') or (row['name'] == 'ND')):
+                atom_types.append(20)
+            else:
+                sys.exit('Error: atom type cannot recognize.')
+        df_MOFF_contact_parameters = pd.read_csv(f'{__location__}/parameters/MOFF_contact_parameters.csv')
+        alpha_map, epsilon_map = np.zeros((21, 21)), np.zeros((21, 21))
+        for i, row in df_MOFF_contact_parameters.iterrows():
+            a1 = _amino_acids.index(row['atom_type1'])
+            a2 = _amino_acids.index(row['atom_type2'])
+            alpha_map[a1, a2] = row['alpha']
+            alpha_map[a2, a1] = row['alpha']
+            epsilon_map[a1, a2] = row['epsilon']
+            epsilon_map[a2, a1] = row['epsilon']
+        alpha_map[:20, 20] = alpha_protein_dna
+        alpha_map[20, :20] = alpha_protein_dna
+        alpha_map[20, 20] = alpha_dna_dna
+        epsilon_map[:20, 20] = epsilon_protein_dna
+        epsilon_map[20, :20] = epsilon_protein_dna
+        epsilon_map[20, 20] = epsilon_dna_dna
+        force = functional_terms.moff_mrg_contact_term(atom_types, self.exclusions, self.use_pbc, alpha_map,
+                                                       epsilon_map, eta, r0, cutoff, force_group)
+        self.system.addForce(force)
+
+
+
+
     def add_elec_switch(self, salt_conc=150.0*unit.millimolar, temperature=300.0*unit.kelvin, 
                         cutoff1=1.2*unit.nanometer, cutoff2=1.5*unit.nanometer, switch_coeff=[1, 0, 0, -10, 15, -6], 
                         add_native_pair_elec=True, force_group=9):
@@ -342,3 +410,256 @@ class MOFFMRGModel(CGModel):
             self.system.addForce(force2)
         else:
             print('Do not add electrostatic interactions between native pair atoms.')
+
+#########THIS IS FOR RERUN PURPOSES ONLY
+
+    def add_elec_switch_map_rerun(self, salt_conc=150.0*unit.millimolar, manning_scale=0.36, temperature=300.0*unit.kelvin,
+                        cutoff1=1.2*unit.nanometer, cutoff2=1.5*unit.nanometer, switch_coeff=[1, 0, 0, -10, 15, -6],
+                        add_native_pair_elec=True, force_group=9):
+        """
+        Add electrostatic interaction with switch function, mapped according to p-p, p-n, and n-n interactions. 
+        
+        The switch function switches potential to zero within range cutoff1 < r <= cutoff2 for the p-p interaction;
+        and will not use the switch function between p-n and n-n interactions; 
+        
+        Parameters
+        ----------
+        salt_conc : Quantity
+            Monovalent salt concentration. 
+        
+        temperature : Quantity
+            Temperature. 
+        
+        cutoff1 : Quantity
+            Cutoff distance 1. 
+        
+        cutoff2 : Quantity
+            Cutoff distance 2. 
+        
+        switch_coeff : list
+            Switch function coefficients. 
+        
+        add_native_pair_elec : bool
+            Whether to add electrostatic interactions between native pairs. 
+        
+        force_group : int
+            Force group. 
+        
+        """
+        print('Add protein and DNA electrostatic interactions with distance-dependent dielectric and switch.')
+        charges = self.atoms['charge'].tolist()
+        force1 = functional_terms.ddd_dh_elec_switch_term_map_rerun(self, salt_conc, manning_scale,
+                                                          temperature, cutoff1, cutoff2, switch_coeff, force_group)
+        self.system.addForce(force1)
+        if add_native_pair_elec and hasattr(self, 'native_pairs'):
+            print('Add electrostatic interactions between native pair atoms.')
+            df_charge_bonds = pd.DataFrame(columns=['a1', 'a2', 'q1', 'q2'])
+            for i, row in self.native_pairs.iterrows():
+                a1, a2 = int(row['a1']), int(row['a2'])
+                q1, q2 = float(charges[a1]), float(charges[a2])
+                if (q1 != 0) and (q2 != 0):
+                    df_charge_bonds.loc[len(df_charge_bonds.index)] = [a1, a2, q1, q2]
+            force2 = functional_terms.ddd_dh_elec_switch_bond_term(df_charge_bonds, self.use_pbc, salt_conc,
+                                                                   temperature, cutoff1, cutoff2, switch_coeff,
+                                                                   force_group)
+            self.system.addForce(force2)
+        else:
+
+           print('Do not add electrostatic interactions between native pair atoms.')
+
+
+
+    def add_elec_switch_map_test(self, salt_conc=150.0*unit.millimolar, manning_scale=0.36, temperature=300.0*unit.kelvin,
+                        cutoff1=1.2*unit.nanometer, cutoff2=1.5*unit.nanometer, switch_coeff=[1, 0, 0, -10, 15, -6],
+                        add_native_pair_elec=True, force_group=9):
+        """
+        Add electrostatic interaction with switch function, mapped according to p-p, p-n, and n-n interactions. 
+        
+        The switch function switches potential to zero within range cutoff1 < r <= cutoff2 for the p-p interaction;
+        and will not use the switch function between p-n and n-n interactions; 
+        
+        Parameters
+        ----------
+        salt_conc : Quantity
+            Monovalent salt concentration. 
+        
+        temperature : Quantity
+            Temperature. 
+        
+        cutoff1 : Quantity
+            Cutoff distance 1. 
+        
+        cutoff2 : Quantity
+            Cutoff distance 2. 
+        
+        switch_coeff : list
+            Switch function coefficients. 
+        
+        add_native_pair_elec : bool
+            Whether to add electrostatic interactions between native pairs. 
+        
+        force_group : int
+            Force group. 
+        
+        """
+        print('Add protein and DNA electrostatic interactions with distance-dependent dielectric and switch.')
+        charges = self.atoms['charge'].tolist()
+        force1 = functional_terms.ddd_dh_elec_switch_term_map_test(self, salt_conc, manning_scale,
+                                                          temperature, cutoff1, cutoff2, switch_coeff, force_group)
+        self.system.addForce(force1)
+        if add_native_pair_elec and hasattr(self, 'native_pairs'):
+            print('Add electrostatic interactions between native pair atoms.')
+            df_charge_bonds = pd.DataFrame(columns=['a1', 'a2', 'q1', 'q2'])
+            for i, row in self.native_pairs.iterrows():
+                a1, a2 = int(row['a1']), int(row['a2'])
+                q1, q2 = float(charges[a1]), float(charges[a2])
+                if (q1 != 0) and (q2 != 0):
+                    df_charge_bonds.loc[len(df_charge_bonds.index)] = [a1, a2, q1, q2]
+            force2 = functional_terms.ddd_dh_elec_switch_bond_term(df_charge_bonds, self.use_pbc, salt_conc,
+                                                                   temperature, cutoff1, cutoff2, switch_coeff,
+                                                                   force_group)
+            self.system.addForce(force2)
+        else:
+           print('Do not add electrostatic interactions between native pair atoms.')
+
+
+
+    def add_contacts_2(self, eta=0.7/unit.angstrom, r0=8*unit.angstrom, cutoff=2.0*unit.nanometer,
+                     alpha_protein_dna=1.6264e-3, alpha_dna_dna=1.678e-5, epsilon_protein_dna=0, epsilon_dna_dna=0,
+                     force_group=8):
+        """
+        Add nonbonded contacts for MOFF protein and MRG DNA.
+
+        For amino acids, the CA atom type indices are 0-19, and CG nucleotide atom type index is 20.
+
+        The potential expression is: alpha/r^12 - 0.5*epsilon*(1 + tanh(eta*(r0 - r)))
+
+        Parameters
+        ----------
+        eta : Quantity
+            Parameter eta.
+
+        r0 : Quantity
+            Parameter r0.
+
+        cutoff : Quantity
+            Cutoff distance
+
+        alpha_protein_dna : float or int
+            Protein-DNA interaction parameter alpha.
+
+        alpha_dna_dna : float or int
+            DNA-DNA interaction parameter alpha.
+
+        epsilon_protein_dna : float or int
+            Protein-DNA interaction parameter epsilon.
+
+        epsilon_dna_dna : float or int
+            DNA-DNA interaction parameter epsilon.
+
+        force_group : int
+            Force group.
+
+        """
+        print('Add protein and DNA nonbonded contacts.')
+        atom_types = []
+        for i, row in self.atoms.iterrows():
+            if (row['resname'] in _amino_acids) and (row['name'] == 'CA'):
+                atom_types.append(_amino_acids.index(row['resname']))
+            elif (row['resname'] in _dna_nucleotides) and (row['name'] == 'DN'):
+                atom_types.append(20)
+            else:
+                sys.exit('Error: atom type cannot recognize.')
+        df_MOFF_contact_parameters = pd.read_csv(f'{__location__}/parameters/MOFF_contact_parameters_2.csv')
+        alpha_map, epsilon_map = np.zeros((21, 21)), np.zeros((21, 21))
+        for i, row in df_MOFF_contact_parameters.iterrows():
+            a1 = _amino_acids.index(row['atom_type1'])
+            a2 = _amino_acids.index(row['atom_type2'])
+            alpha_map[a1, a2] = row['alpha']
+            alpha_map[a2, a1] = row['alpha']
+            epsilon_map[a1, a2] = row['epsilon']
+            epsilon_map[a2, a1] = row['epsilon']
+        alpha_map[:20, 20] = alpha_protein_dna
+        alpha_map[20, :20] = alpha_protein_dna
+        alpha_map[20, 20] = alpha_dna_dna
+        epsilon_map[:20, 20] = epsilon_protein_dna
+        epsilon_map[20, :20] = epsilon_protein_dna
+        epsilon_map[20, 20] = epsilon_dna_dna
+        force = functional_terms.moff_mrg_contact_term(atom_types, self.exclusions, self.use_pbc, alpha_map,
+                                                       epsilon_map, eta, r0, cutoff, force_group)
+        self.system.addForce(force)
+
+    def add_contacts_test(self, eta=0.7/unit.angstrom, r0=8*unit.angstrom, cutoff=2.0*unit.nanometer, 
+                     alpha_protein_dna=1.6264e-3, alpha_dna_dna=1.678e-5, epsilon_protein_dna=0, epsilon_dna_dna=0, 
+                     force_group=8):
+        """
+        Add nonbonded contacts for MOFF protein and MRG DNA. 
+        
+        For amino acids, the CA atom type indices are 0-19, and CG nucleotide atom type index is 20. 
+        
+        The potential expression is: alpha/r^12 - 0.5*epsilon*(1 + tanh(eta*(r0 - r)))
+        
+        Parameters
+        ----------
+        eta : Quantity
+            Parameter eta. 
+        
+        r0 : Quantity
+            Parameter r0. 
+        
+        cutoff : Quantity
+            Cutoff distance
+        
+        alpha_protein_dna : float or int
+            Protein-DNA interaction parameter alpha. 
+        
+        alpha_dna_dna : float or int
+            DNA-DNA interaction parameter alpha. 
+        
+        epsilon_protein_dna : float or int
+            Protein-DNA interaction parameter epsilon. 
+        
+        epsilon_dna_dna : float or int
+            DNA-DNA interaction parameter epsilon. 
+        
+        force_group : int
+            Force group.  
+        
+        """
+        print('Add protein and DNA nonbonded contacts.')
+        atom_types = []
+        atom_labels = []
+        for i, row in self.atoms.iterrows():
+            if (row['resname'] in _amino_acids) and ((row['name'] == 'CA') or (row['name'] == 'NP')):
+                atom_types.append(_amino_acids.index(row['resname']))
+                if (row['name'] == 'CA'):
+                  atom_labels.append(0)
+                elif (row['name'] == 'NP'):
+                  atom_labels.append(2)
+            elif (row['resname'] in _dna_nucleotides) and ((row['name'] == 'DN') or (row['name'] == 'ND')):
+                atom_types.append(20)
+                if (row['name'] == 'DN'):
+                  atom_labels.append(1)
+                elif (row['name'] == 'ND'):
+                  atom_labels.append(3)
+            else:
+                sys.exit('Error: atom type cannot recognize.')
+
+        df_MOFF_contact_parameters = pd.read_csv(f'{__location__}/parameters/MOFF_contact_parameters.csv')
+        alpha_map, epsilon_map = np.zeros((21, 21)), np.zeros((21, 21))
+        for i, row in df_MOFF_contact_parameters.iterrows():
+            a1 = _amino_acids.index(row['atom_type1'])
+            a2 = _amino_acids.index(row['atom_type2'])
+            alpha_map[a1, a2] = row['alpha']
+            alpha_map[a2, a1] = row['alpha']
+            epsilon_map[a1, a2] = row['epsilon']
+            epsilon_map[a2, a1] = row['epsilon']
+        alpha_map[:20, 20] = alpha_protein_dna
+        alpha_map[20, :20] = alpha_protein_dna
+        alpha_map[20, 20] = alpha_dna_dna
+        epsilon_map[:20, 20] = epsilon_protein_dna
+        epsilon_map[20, :20] = epsilon_protein_dna
+        epsilon_map[20, 20] = epsilon_dna_dna
+        force = functional_terms.moff_mrg_contact_term_test(atom_types, atom_labels,self.exclusions, self.use_pbc, alpha_map, 
+                                                       epsilon_map, eta, r0, cutoff, force_group)
+        self.system.addForce(force)
