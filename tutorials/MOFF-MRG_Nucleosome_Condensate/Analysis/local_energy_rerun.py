@@ -19,11 +19,6 @@ from openabc.forcefields import MOFFMRGModel
 from openabc.forcefields.parsers import MOFFParser, MRGdsDNAParser
 from openabc.utils.shadow_map import load_ca_pairs_from_gmx_top
 
-"""
-Compare energy with GROMACS output. 
-Note the native pairs in GROMACS topology file are produced by SMOG, which may be slightly different from the native pairs found by our shadow map algorithm code. 
-To keep consistency, we directly load native pairs from GROMACS topology file. 
-"""
 
 salt = 200
 print(f"Processing salt concentration: {salt}")
@@ -95,6 +90,7 @@ for i in range(0,100):
     protein_dna.add_dna_fan_bonds(force_group=7)
     protein_dna.add_contacts_test(force_group=8)
 
+    ##### This is the energy we are focused on measuring
     protein_dna.add_elec_switch_map_test(salt_conc, manning_scale, temperature, cutoff1=8.3*unit.nanometer, force_group=9)
 
     protein_dna.save_system('system.xml')
