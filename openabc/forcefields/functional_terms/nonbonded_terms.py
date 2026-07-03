@@ -817,7 +817,7 @@ def ddd_dh_elec_switch_term_map_rerun(mol, salt_conc=150.0*unit.millimolar, mann
 
 def ddd_dh_elec_switch_term_map_test(mol, salt_conc=150.0*unit.millimolar, manning_scale=0.36,
                             temperature=300.0*unit.kelvin, cutoff1=1.2*unit.nanometer, cutoff2=1.5*unit.nanometer,
-                            switch_coeff=[1, 0, 0, -10, 15, -6], force_group=9):
+                            switch_coeff=[1, 0, 0, -10, 15, -6], atom_type_1,atom_type_2,force_group=9):
     '''
     Debye-Huckel potential with a distance-dependent dielectric and a switch function.
     The switch function value changes from 1 to 0 smoothly as distance r changes from cutoff1 to cutoff2.
@@ -866,12 +866,12 @@ def ddd_dh_elec_switch_term_map_test(mol, salt_conc=150.0*unit.millimolar, manni
     cutoff_r2_map = np.zeros((n_atom_types, n_atom_types))
 
     determine = np.zeros((n_atom_types, n_atom_types))
+    determine[atom_type_1,atom_type_2] = 1
 
     for idx in range(0, 4, 1):
         for jdx in range(0, 4, 1):
 
-            if (idx == 0 and jdx == 0):
-                #determine[idx, jdx] = 1
+            if (idx == 0 and jdx == 0):                
                 #switch_coeff0_map[idx,jdx] = switch_coeff[0]
                 switch_coeff1_map[idx, jdx] = switch_coeff[1]
                 switch_coeff2_map[idx, jdx] = switch_coeff[2]
@@ -884,8 +884,6 @@ def ddd_dh_elec_switch_term_map_test(mol, salt_conc=150.0*unit.millimolar, manni
                 cutoff_r2_map[idx, jdx] = cutoff2_value
 
             elif(idx == 1 and jdx == 1):
-               # determine[idx, jdx] = 1
-            #    switch_coeff0_map[idx,jdx] = switch_coeff[0]
                 switch_coeff1_map[idx, jdx] = switch_coeff[1]
                 switch_coeff2_map[idx, jdx] = switch_coeff[2]
                 switch_coeff3_map[idx, jdx] = switch_coeff[3]
@@ -900,8 +898,6 @@ def ddd_dh_elec_switch_term_map_test(mol, salt_conc=150.0*unit.millimolar, manni
                 # r2 set to 5 DH length;
                 cutoff_r2_map[idx, jdx] = cutoff2_value
             elif((idx == 0 and jdx == 1) or (idx == 1 and jdx == 0)):
-            #    switch_coeff0_map[idx,jdx] = switch_coeff[0]
-                #determine[idx, jdx] = 1
                 switch_coeff1_map[idx, jdx] = switch_coeff[1]
                 switch_coeff2_map[idx, jdx] = switch_coeff[2]
                 switch_coeff3_map[idx, jdx] = switch_coeff[3]
@@ -914,8 +910,6 @@ def ddd_dh_elec_switch_term_map_test(mol, salt_conc=150.0*unit.millimolar, manni
                 # r2 set to 5 DH length;
                 cutoff_r2_map[idx, jdx] = cutoff2_value
             elif((idx == 0 and jdx == 2) or (idx == 2 and jdx == 0)):
-                #determine[idx, jdx] = 1
-                #switch_coeff0_map[idx,jdx] = switch_coeff[0]
                 switch_coeff1_map[idx, jdx] = switch_coeff[1]
                 switch_coeff2_map[idx, jdx] = switch_coeff[2]
                 switch_coeff3_map[idx, jdx] = switch_coeff[3]
@@ -926,8 +920,6 @@ def ddd_dh_elec_switch_term_map_test(mol, salt_conc=150.0*unit.millimolar, manni
                 cutoff_r1_map[idx, jdx] = cutoff1_value
                 cutoff_r2_map[idx, jdx] = cutoff2_value
             elif((idx == 1 and jdx == 3) or (idx == 3 and jdx == 1)):
-                #determine[idx, jdx] = 1
-            #    switch_coeff0_map[idx,jdx] = switch_coeff[0]
                 switch_coeff1_map[idx, jdx] = switch_coeff[1]
                 switch_coeff2_map[idx, jdx] = switch_coeff[2]
                 switch_coeff3_map[idx, jdx] = switch_coeff[3]
@@ -942,8 +934,6 @@ def ddd_dh_elec_switch_term_map_test(mol, salt_conc=150.0*unit.millimolar, manni
                 # r2 set to 5 DH length;
                 cutoff_r2_map[idx, jdx] = cutoff2_value
             elif((idx == 1 and jdx == 2) or (idx == 2 and jdx == 1)):
-                #determine[idx, jdx] = 1
-                #switch_coeff0_map[idx,jdx] = switch_coeff[0]
                 switch_coeff1_map[idx, jdx] = switch_coeff[1]
                 switch_coeff2_map[idx, jdx] = switch_coeff[2]
                 switch_coeff3_map[idx, jdx] = switch_coeff[3]
@@ -954,8 +944,6 @@ def ddd_dh_elec_switch_term_map_test(mol, salt_conc=150.0*unit.millimolar, manni
                 cutoff_r1_map[idx, jdx] = cutoff1_value
                 cutoff_r2_map[idx, jdx] = cutoff2_value
             elif((idx == 0 and jdx == 3) or (idx == 3 and jdx == 0)):
-                determine[idx, jdx] = 1
-                #switch_coeff0_map[idx,jdx] = switch_coeff[0]
                 switch_coeff1_map[idx, jdx] = switch_coeff[1]
                 switch_coeff2_map[idx, jdx] = switch_coeff[2]
                 switch_coeff3_map[idx, jdx] = switch_coeff[3]
@@ -966,8 +954,6 @@ def ddd_dh_elec_switch_term_map_test(mol, salt_conc=150.0*unit.millimolar, manni
                 cutoff_r1_map[idx, jdx] = cutoff1_value
                 cutoff_r2_map[idx, jdx] = cutoff2_value
             elif((idx == 3 and jdx == 2) or (idx == 2 and jdx == 3)):
-                #determine[idx, jdx] = 1
-                #switch_coeff0_map[idx,jdx] = switch_coeff[0]
                 switch_coeff1_map[idx, jdx] = switch_coeff[1]
                 switch_coeff2_map[idx, jdx] = switch_coeff[2]
                 switch_coeff3_map[idx, jdx] = switch_coeff[3]
@@ -978,8 +964,6 @@ def ddd_dh_elec_switch_term_map_test(mol, salt_conc=150.0*unit.millimolar, manni
                 cutoff_r1_map[idx, jdx] = cutoff1_value
                 cutoff_r2_map[idx, jdx] = cutoff2_value
             elif(idx == 2 and jdx == 2):
-                #determine[idx, jdx] = 1
-                #switch_coeff0_map[idx,jdx] = switch_coeff[0]
                 switch_coeff1_map[idx, jdx] = switch_coeff[1]
                 switch_coeff2_map[idx, jdx] = switch_coeff[2]
                 switch_coeff3_map[idx, jdx] = switch_coeff[3]
@@ -990,8 +974,6 @@ def ddd_dh_elec_switch_term_map_test(mol, salt_conc=150.0*unit.millimolar, manni
                 cutoff_r1_map[idx, jdx] = cutoff1_value
                 cutoff_r2_map[idx, jdx] = cutoff2_value
             elif(idx == 3 and jdx == 3):
-               # determine[idx, jdx] = 1
-            #    switch_coeff0_map[idx,jdx] = switch_coeff[0]
                 switch_coeff1_map[idx, jdx] = switch_coeff[1]
                 switch_coeff2_map[idx, jdx] = switch_coeff[2]
                 switch_coeff3_map[idx, jdx] = switch_coeff[3]
@@ -1007,8 +989,6 @@ def ddd_dh_elec_switch_term_map_test(mol, salt_conc=150.0*unit.millimolar, manni
                 cutoff_r2_map[idx, jdx] = cutoff2_value
 
 
-
-    #switch_coeff0_map = switch_coeff0_map.ravel().tolist()
     determine = determine.ravel().tolist()
     switch_coeff1_map = switch_coeff1_map.ravel().tolist()
     switch_coeff2_map = switch_coeff2_map.ravel().tolist()
