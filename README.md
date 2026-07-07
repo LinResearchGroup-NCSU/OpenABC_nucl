@@ -4,11 +4,11 @@ This repository provides an automated, high-throughput molecular dynamics workfl
 
 ---
 
-## 🚀 Highlighted Tutorial
+## Highlighted Tutorial
 
 > 📖 **Getting Started:** We provide a comprehensive, step-by-step pipeline demonstration in our **Nucleosome Condensate Tutorial**. This Jupyter Notebook guides users through structural setup, custom force integrations, and production NVT trajectory executions. 
 > 
-> **Go straight to the pipeline:** `tutorials/nucleosome_condensate_coexistence.ipynb`
+> **Go straight to the pipeline:** `tutorials/MOFF-MRG-Nucleosome-Condensate/Simulation/nucleosome_condensate_coexistence.ipynb`
 
 ---
 
