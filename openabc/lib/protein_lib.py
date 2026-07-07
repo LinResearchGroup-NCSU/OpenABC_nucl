@@ -1,7 +1,7 @@
 _amino_acids = ['ALA', 'ARG', 'ASN', 'ASP', 'CYS',
                 'GLN', 'GLU', 'GLY', 'HIS', 'ILE',
                 'LEU', 'LYS', 'MET', 'PHE', 'PRO',
-                'SER', 'THR', 'TRP', 'TYR', 'VAL']
+                'SER', 'THR', 'TRP', 'TYR', 'VAL','ALY']
 
 _amino_acid_1_letter_to_3_letters_dict = dict(A='ALA', R='ARG', N='ASN', D='ASP', C='CYS', 
                                               Q='GLN', E='GLU', G='GLY', H='HIS', I='ILE', 
