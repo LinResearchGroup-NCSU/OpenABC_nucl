@@ -143,7 +143,7 @@ simulation.context.setVelocitiesToTemperature(temperature)
 
 # run NVT compression
 print('Start NVT run.')
-simulation.step(5000000)
+simulation.step(50)
 print('NVT simulation is finished.')
 
 # ==============================================================================
