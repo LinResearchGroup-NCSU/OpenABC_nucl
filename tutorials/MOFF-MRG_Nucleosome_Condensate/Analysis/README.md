@@ -79,11 +79,3 @@ Ensure your active Python environment features the following verified analytical
 * `numpy` & `pandas`
 
 ```
-
----
-
-### **Why this README stands out:**
-* **Explains Code Logic:** It explains the weird-looking string replacements (`'CA': 'NP'`, etc.) in `local_energy_rerun.py` as an "atom-type remapping" strategy to calculate isolated potentials, proving to anyone using your code that it was intentionally designed.
-* **Includes Mathematical Justification:** Showing the formula for the cutoff calculation ($\kappa \times 10$) reinforces the rigorous physical chemistry backing your analysis choices.
-
-```
