@@ -1,20 +1,67 @@
-# Coarse-Grained Chromatin Slab Simulation (OpenABC MOFF/MRG Forcefield)
+```markdown
+# Chromatin Condensate Slab Simulation Engine
 
-This repository provides an automated workflow to set up, parameterize, and execute high-throughput molecular dynamics trajectories of multi-nucleosome arrays inside an elongated slab geometry. The software is optimized to investigate liquid-liquid phase separation (LLPS), network connectivity, and thermodynamic binodal boundaries of chromatin as a function of ionic strength, DNA mechanics, and epigenetic tailoring.
+This folder contains the core configuration and execution scripts used to build and simulate 100-nucleosome chromatin arrays within an elongated slab geometry. The setup utilizes the `OpenABC` platform to implement the coarse-grained **MOFF** protein potential and **MRG** double-stranded DNA model.
 
-## 1. Physical & Architectural Overview
-* **Forcefield Framework:** Employs a unified residue-resolution model combining the **MOFF** (Molecular model for Open chromatin with Fine-tuned Flexible histone tails) protein potential with the **MRG** (Multi-Scale Rigid-Body/Gaussian) double-stranded DNA model via the `OpenABC` API.
-* **Mechanical Validation:** The model utilizes a calibrated DNA bending rigidity parameter (`bonded_energy_scale=0.8`) which accurately reproduces the empirical **50 nm persistence length** characteristic of standard 150-bp naked DNA segments.
-* **System Geometry:** Simulations are housed within an anisotropic slab container ($49 \times 49 \times 300\text{ nm}$). The extended $z$-axis allows a stable dense chromatin condensate core to spontaneously form and remain in continuous coexistence with a surrounding dilute phase.
-* **Rigid Body Constraints:** To maintain structural realism, each individual nucleosome features a rigid core containing the histone octamer bound alongside the internal 73 base pairs of wrapped DNA.
+---
 
-## 2. Directory & Input Requirements
-Before running the primary simulation script, verify that your working environment contains the following file structure:
+## 1. Directory Structure
+
+Ensure your local folder maintains the following architecture before executing the pipeline:
+
 ```text
-├── run_chromatin_slab.py       # Main setup and integration script
-├── nucl_utils.py               # Auxiliary chromatin topology generator functions
-├── starting_structure/
-│   ├── histone.pdb             # Atomistic/Coarse-grained baseline structure of single histone core
-│   └── dna.pdb                 # Atomistic/Coarse-grained base map of single nucleosome DNA track
-└── equil-200mM/
-    └── output_NPT.dcd          # Pre-compressed equilibration coordinate track
+simulation/
+├── Setup.py                # Main workflow script (System construction & NVT run)
+├── nucl_utils.py           # Core library containing rigid body mapping utilities
+└── starting_structure/
+    ├── histone.pdb         # Atomistic/Coarse-grained reference structural core
+    └── dna.pdb             # Atomistic/Coarse-grained baseline tracking DNA coordinates
+
+```
+
+---
+
+## 2. Technical & Physical Specifications
+
+* **Force Field Framework:** Operates at a unified residue-resolution level. Histones are treated using the C$\alpha$-level **MOFF** model, while DNA parameters employ the **MRG** model.
+* **Calibrated DNA Rigidity:** Linker and wrapped DNA features a tuned `bonded_energy_scale = 0.8`. This mechanical calibration is explicitly validated to reproduce the empirical **50 nm persistence length** of naked double-stranded DNA.
+* **Slab Phase Coexistence Geometry:** Molecules are packed into an anisotropic, elongated box container ($49 \times 49 \times 300\text{ nm}$). The extended $z$-axis provides the thermodynamic space needed for a dense chromatin core to phase-separate and continuously coexist alongside a surrounding dilute phase.
+* **Rigid Body Constraints:** To maintain structural integrity during dense crowding conditions, each nucleosome enforces a rigid body grouping consisting of the central histone octamer and the internal 73 base pairs of wrapped DNA.
+
+---
+
+## 3. Configuration Parameters
+
+The baseline environment variables are hardcoded within `Setup.py` to target physiological conditions:
+
+* **Salt Environment:** $200\text{ mM}$ monovalent salt concentration (governed by custom Debye-Hückel switching map electrostatics).
+* **Thermal Controls:** $300\text{ K}$ regulated via a `LangevinMiddleIntegrator`.
+* **Kinetics Acceleration:** The integrator friction coefficient is set to a low value ($0.01\text{ ps}^{-1}$) with a **10 fs timestep** to accelerate conformation sampling.
+* **Hardware:** Default computational target is configured for **CUDA** GPU acceleration.
+
+---
+
+## 4. Pipeline Execution & Outputs
+
+### Running the Workflow
+
+To initiate the nucleosome packing, structural assembly, force group assignments, and subsequent 50 ns ($5,000,000$ steps) production NVT compression trajectory, execute:
+
+```bash
+python Setup.py
+
+```
+
+### Generated Outputs
+
+Upon successful completion, the script will populate your workspace with four key runtime files required for downstream post-processing analysis:
+
+1. `cg_n_nucl.pdb`: The full assembled topology file holding the initial coordinates of all 100 packed nucleosomes.
+2. `system.xml`: Serialized system parameter layout holding active force groups and constraints.
+3. `traj_temp300.dcd`: Binary coordinate trajectory file recording periodic matrix frames every 50,000 integration steps.
+4. `state_report.txt`: Tab-delimited performance report logging computational steps, absolute temperatures, potential energy trends, and processing velocities.
+5. `state_cpt.xml`: Final thermodynamic checkpoint holding coordinate and velocity vectors, utilized to resume trajectories smoothly without state loss.
+
+```
+
+```
