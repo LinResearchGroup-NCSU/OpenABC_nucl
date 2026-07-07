@@ -1,4 +1,3 @@
-```markdown
 # Chromatin Condensate Slab Simulation Engine
 
 This folder contains the core configuration and execution scripts used to build and simulate 100-nucleosome chromatin arrays within an elongated slab geometry. The setup utilizes the `OpenABC` platform to implement the coarse-grained **MOFF** protein potential and **MRG** double-stranded DNA model.
