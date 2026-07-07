@@ -63,7 +63,7 @@ The main production script initializes the anisotropic box volume, enforces rigi
 Ensure `histone.pdb` and `dna.pdb` are placed in your `starting_structure/` folder, then run:
 
 ```bash
-python run_chromatin_slab.py
+python Setup.py
 
 ```
 
