@@ -815,9 +815,9 @@ def ddd_dh_elec_switch_term_map_rerun(mol, salt_conc=150.0*unit.millimolar, mann
     return elec
 
 
-def ddd_dh_elec_switch_term_map_test(mol, salt_conc=150.0*unit.millimolar, manning_scale=0.36,
+def ddd_dh_elec_switch_term_map_test(mol, atom_type_1,atom_type_2, salt_conc=150.0*unit.millimolar, manning_scale=0.36,
                             temperature=300.0*unit.kelvin, cutoff1=1.2*unit.nanometer, cutoff2=1.5*unit.nanometer,
-                            switch_coeff=[1, 0, 0, -10, 15, -6], atom_type_1,atom_type_2,force_group=9):
+                            switch_coeff=[1, 0, 0, -10, 15, -6],force_group=9):
     '''
     Debye-Huckel potential with a distance-dependent dielectric and a switch function.
     The switch function value changes from 1 to 0 smoothly as distance r changes from cutoff1 to cutoff2.
