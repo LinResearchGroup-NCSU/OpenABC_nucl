@@ -88,7 +88,7 @@ for i in range(0,100):
     protein_dna.add_dna_bonds(force_group=5)
     protein_dna.add_dna_angles(force_group=6)
     protein_dna.add_dna_fan_bonds(force_group=7)
-    protein_dna.add_contacts(force_group=8)
+    protein_dna.add_contacts_test(force_group=8)
 
     ##### This is the energy we are focused on measuring
     #CG atom types:
