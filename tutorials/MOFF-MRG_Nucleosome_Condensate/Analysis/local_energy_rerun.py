@@ -96,7 +96,9 @@ for i in range(0,100):
     #atom_type 1 for DNA CG atoms.
     #atom_type 2 for individual Nucleosome Protein
     #atom_type 3 for individual Nucleosome DNA
-    protein_dna.add_elec_switch_map_test(salt_conc, manning_scale, temperature, cutoff1=8.3*unit.nanometer, atom_type_1=1,atom_type_2=2,force_group=9)
+    atom_type_1 = 1
+    atom_type_2 = 3
+    protein_dna.add_elec_switch_map_test(atom_type_1,atom_type_2,salt_conc, manning_scale, temperature, cutoff1=8.3*unit.nanometer, force_group=9)
 
     protein_dna.save_system('system.xml')
     collision = 1/unit.picosecond
