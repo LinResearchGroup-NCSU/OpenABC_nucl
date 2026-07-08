@@ -815,7 +815,7 @@ def ddd_dh_elec_switch_term_map_rerun(mol, salt_conc=150.0*unit.millimolar, mann
     return elec
 
 
-def ddd_dh_elec_switch_term_map_test(mol, atom_type_1,atom_type_2, salt_conc=150.0*unit.millimolar, manning_scale=0.36,
+def ddd_dh_elec_switch_term_map_test(mol, salt_conc=150.0*unit.millimolar, at_1=0, at_2=1, manning_scale=0.36,
                             temperature=300.0*unit.kelvin, cutoff1=1.2*unit.nanometer, cutoff2=1.5*unit.nanometer,
                             switch_coeff=[1, 0, 0, -10, 15, -6],force_group=9):
     '''
@@ -866,7 +866,7 @@ def ddd_dh_elec_switch_term_map_test(mol, atom_type_1,atom_type_2, salt_conc=150
     cutoff_r2_map = np.zeros((n_atom_types, n_atom_types))
 
     determine = np.zeros((n_atom_types, n_atom_types))
-    determine[atom_type_1,atom_type_2] = 1
+    determine[at_1,at_2] = 1
 
     for idx in range(0, 4, 1):
         for jdx in range(0, 4, 1):
