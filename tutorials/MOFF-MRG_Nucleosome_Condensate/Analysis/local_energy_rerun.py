@@ -88,6 +88,7 @@ for i in range(0,100):
     protein_dna.add_dna_bonds(force_group=5)
     protein_dna.add_dna_angles(force_group=6)
     protein_dna.add_dna_fan_bonds(force_group=7)
+    ## This function is different from the simulation as it also needs to account for the different atom types/names
     protein_dna.add_contacts_test(force_group=8)
 
     ##### This is the energy we are focused on measuring
