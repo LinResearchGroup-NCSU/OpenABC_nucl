@@ -99,7 +99,7 @@ for i in range(0,100):
     #atom_type 3 for individual Nucleosome DNA
     at_1 = 1
     at_2 = 3
-    protein_dna.add_elec_switch_map_test(at_1,at_2,salt_conc, manning_scale, temperature, cutoff1=8.3*unit.nanometer, force_group=9)
+    protein_dna.add_elec_switch_map_test(salt_conc, at_1, at_2, manning_scale, temperature, cutoff1=8.3*unit.nanometer, force_group=9)
 
     protein_dna.save_system('system.xml')
     collision = 1/unit.picosecond
