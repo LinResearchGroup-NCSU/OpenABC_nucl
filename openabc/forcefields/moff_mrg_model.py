@@ -469,7 +469,7 @@ class MOFFMRGModel(CGModel):
 
 
 
-    def add_elec_switch_map_test(self, atom_type_1,atom_type_2,salt_conc=150.0*unit.millimolar, manning_scale=0.36, temperature=300.0*unit.kelvin,
+    def add_elec_switch_map_test(self,salt_conc=150.0*unit.millimolar, at_1=0, at_2=1, manning_scale=0.36, temperature=300.0*unit.kelvin,
                         cutoff1=1.2*unit.nanometer, cutoff2=1.5*unit.nanometer, switch_coeff=[1, 0, 0, -10, 15, -6],
                         add_native_pair_elec=True, force_group=9):
         """
@@ -504,7 +504,7 @@ class MOFFMRGModel(CGModel):
         """
         print('Add protein and DNA electrostatic interactions with distance-dependent dielectric and switch.')
         charges = self.atoms['charge'].tolist()
-        force1 = functional_terms.ddd_dh_elec_switch_term_map_test(self, atom_type_1, atom_type_2, salt_conc, manning_scale,
+        force1 = functional_terms.ddd_dh_elec_switch_term_map_test(self, salt_conc, at_1, at_2, manning_scale,
                                                           temperature, cutoff1, cutoff2, switch_coeff, force_group)
         self.system.addForce(force1)
         if add_native_pair_elec and hasattr(self, 'native_pairs'):
