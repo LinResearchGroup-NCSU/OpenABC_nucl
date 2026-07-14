@@ -101,7 +101,7 @@ python analysis/network_rerun.py
 
 ## References & Citations
 
-If you utilize this workflow, forcefield architecture, or analysis suite in your research, please cite the primary OpenABC platform alongside the structural models:
+If you utilize this workflow, forcefield architecture, or analysis suite in your research, please consider citing our work, the primary OpenABC platform, and the simulation models:
 
 * **This Work:** Silvernail, et al. "Charge Imbalance Drives Salt-Optimized Nucleosome Phase Separation under Physiological Conditions.", *BioRxiv*, 2026, DOI: [10.64898/2026.07.08.737367](https://doi.org/10.64898/2026.07.08.737367)
 * **OpenABC Framework:** Liu, et al. "OpenABC Enables Flexible, Simplified, and Efficient GPU Accelerated Simulations of Biomolecular Condensates." *PLoS Comput. Biol.*, 2024. DOI: [10.1371/journal.pcbi.1011442](https://doi.org/10.1371/journal.pcbi.1011442)
